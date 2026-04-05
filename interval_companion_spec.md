@@ -34,7 +34,16 @@ Whenever a round or interval starts or ends the respective sound is played (if c
 
 The pause button pauses and resumes execution. 
 
-the stop button stops and resets
+the stop button stops and resets.
+
+when there are no rounds configured, there is a red text at the bottom:
+"Define rounds in the settings first!". Tapping on this text leads the user to the round settings screen. 
+
+
+# Help
+
+This drawer menu opens a help screen explaining how the app works. 
+on each screen (except the help screen itself) in the top bar on the right edge there is a blue circle with a white question mark inside. Tapping it also leads to the help screen.
 
 
 

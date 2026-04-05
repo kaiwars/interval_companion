@@ -29,6 +29,7 @@ app/src/main/java/com/example/intervalcompanion/
 └── ui/
     ├── theme/                    Material3 dynamic-color theme
     ├── go/                       GoScreen + GoViewModel (execution loop, timer)
+    ├── help/                     HelpScreen (static; no ViewModel)
     └── settings/
         ├── SettingsHubScreen.kt  Settings main menu (list of sub-screens)
         ├── rounds/               Round CRUD
@@ -49,11 +50,12 @@ app/src/main/java/com/example/intervalcompanion/
 ## Navigation
 
 ```
-Drawer: Go | Settings
+Drawer: Go | Settings | Help
   Go          → GoScreen (start destination)
   Settings    → SettingsHubScreen
                   └─ Rounds / Interval Names / Voice Playback / Voice Recording / Audio Focus
                        └─ back → SettingsHubScreen → back → Go
+  Help        → HelpScreen (also reachable via "?" button in every screen's TopAppBar)
 ```
 
 Routes are `Screen` sealed-class objects in `AppNavigation.kt`.
@@ -84,6 +86,7 @@ Stored in `context.filesDir/audio/` as M4A:
 ## Execution Loop (GoViewModel)
 
 - `play()` launches `runExecution()` in `viewModelScope`.
+- `hasActiveRounds: StateFlow<Boolean>` is derived from `settingsFlow`; GoScreen uses it to show a red warning when no rounds are configured.
 - Iterates active (checked) rounds round-robin until `stop()`.
 - Settings are re-read at the start of each round so live changes take effect.
 - `countdown(seconds)` runs in 100 ms ticks; pauses when `PlayState.PAUSED`, returns `false` when stopped.
