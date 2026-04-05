@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -17,6 +18,7 @@ data class SettingsItem(val label: String, val onClick: () -> Unit)
 @Composable
 fun SettingsHubScreen(
     onBack: () -> Unit,
+    onNavigateToHelp: () -> Unit,
     items: List<SettingsItem>
 ) {
     Scaffold(
@@ -26,6 +28,15 @@ fun SettingsHubScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToHelp) {
+                        Icon(
+                            Icons.Default.Help,
+                            contentDescription = "Help",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             )

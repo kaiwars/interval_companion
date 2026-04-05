@@ -1,5 +1,6 @@
 package com.example.intervalcompanion.ui.go
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -8,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -17,9 +19,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun GoScreen(
     onOpenDrawer: () -> Unit,
+    onNavigateToRounds: () -> Unit,
+    onNavigateToHelp: () -> Unit,
     viewModel: GoViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val hasActiveRounds by viewModel.hasActiveRounds.collectAsState()
 
     Scaffold(
         topBar = {
@@ -28,6 +33,15 @@ fun GoScreen(
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
                         Icon(Icons.Default.Menu, contentDescription = "Open menu")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToHelp) {
+                        Icon(
+                            Icons.Default.Help,
+                            contentDescription = "Help",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             )
@@ -138,6 +152,16 @@ fun GoScreen(
                 fontWeight = FontWeight.Light,
                 color = MaterialTheme.colorScheme.onSurface
             )
+
+            if (!hasActiveRounds) {
+                Spacer(Modifier.weight(1f))
+                Text(
+                    text = "Define rounds in the settings first!",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.clickable { onNavigateToRounds() }
+                )
+            }
         }
     }
 }

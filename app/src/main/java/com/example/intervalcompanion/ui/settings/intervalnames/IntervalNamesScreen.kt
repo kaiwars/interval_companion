@@ -3,6 +3,7 @@ package com.example.intervalcompanion.ui.settings.intervalnames
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -13,6 +14,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun IntervalNamesScreen(
     onBack: () -> Unit,
+    onNavigateToHelp: () -> Unit,
     viewModel: IntervalNamesViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -24,6 +26,15 @@ fun IntervalNamesScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToHelp) {
+                        Icon(
+                            Icons.Default.Help,
+                            contentDescription = "Help",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             )

@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.*
 import com.example.intervalcompanion.ui.go.GoScreen
+import com.example.intervalcompanion.ui.help.HelpScreen
 import com.example.intervalcompanion.ui.settings.SettingsHubScreen
 import com.example.intervalcompanion.ui.settings.SettingsItem
 import com.example.intervalcompanion.ui.settings.audiofocus.AudioFocusScreen
@@ -26,6 +27,7 @@ sealed class Screen(val route: String) {
     object VoicePlayback : Screen("settings/voice_playback")
     object VoiceRecording : Screen("settings/voice_recording")
     object AudioFocus : Screen("settings/audio_focus")
+    object Help : Screen("help")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,6 +41,10 @@ fun AppNavigation() {
     fun closeAndNavigate(route: String) {
         scope.launch { drawerState.close() }
         navController.navigate(route) { launchSingleTop = true }
+    }
+
+    val navigateToHelp: () -> Unit = {
+        navController.navigate(Screen.Help.route) { launchSingleTop = true }
     }
 
     ModalNavigationDrawer(
@@ -64,6 +70,12 @@ fun AppNavigation() {
                     selected = false,
                     onClick = { closeAndNavigate(Screen.SettingsHub.route) }
                 )
+                NavigationDrawerItem(
+                    label = { Text("Help") },
+                    icon = { Icon(Icons.Default.Help, contentDescription = null) },
+                    selected = false,
+                    onClick = { closeAndNavigate(Screen.Help.route) }
+                )
             }
         }
     ) {
@@ -82,11 +94,16 @@ fun AppNavigation() {
 
         NavHost(navController = navController, startDestination = Screen.Go.route) {
             composable(Screen.Go.route) {
-                GoScreen(onOpenDrawer = { openDrawer() })
+                GoScreen(
+                    onOpenDrawer = { openDrawer() },
+                    onNavigateToRounds = { navController.navigate(Screen.Rounds.route) { launchSingleTop = true } },
+                    onNavigateToHelp = navigateToHelp
+                )
             }
             composable(Screen.SettingsHub.route) {
                 SettingsHubScreen(
                     onBack = backToGo,
+                    onNavigateToHelp = navigateToHelp,
                     items = listOf(
                         SettingsItem("Rounds") { navController.navigate(Screen.Rounds.route) },
                         SettingsItem("Interval Names") { navController.navigate(Screen.IntervalNames.route) },
@@ -97,19 +114,22 @@ fun AppNavigation() {
                 )
             }
             composable(Screen.Rounds.route) {
-                RoundsScreen(onBack = backToHub)
+                RoundsScreen(onBack = backToHub, onNavigateToHelp = navigateToHelp)
             }
             composable(Screen.IntervalNames.route) {
-                IntervalNamesScreen(onBack = backToHub)
+                IntervalNamesScreen(onBack = backToHub, onNavigateToHelp = navigateToHelp)
             }
             composable(Screen.VoicePlayback.route) {
-                VoicePlaybackScreen(onBack = backToHub)
+                VoicePlaybackScreen(onBack = backToHub, onNavigateToHelp = navigateToHelp)
             }
             composable(Screen.VoiceRecording.route) {
-                VoiceRecordingScreen(onBack = backToHub)
+                VoiceRecordingScreen(onBack = backToHub, onNavigateToHelp = navigateToHelp)
             }
             composable(Screen.AudioFocus.route) {
-                AudioFocusScreen(onBack = backToHub)
+                AudioFocusScreen(onBack = backToHub, onNavigateToHelp = navigateToHelp)
+            }
+            composable(Screen.Help.route) {
+                HelpScreen(onBack = { navController.popBackStack() })
             }
         }
     }

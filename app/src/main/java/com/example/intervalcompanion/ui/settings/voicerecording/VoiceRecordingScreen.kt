@@ -22,6 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun VoiceRecordingScreen(
     onBack: () -> Unit,
+    onNavigateToHelp: () -> Unit,
     viewModel: VoiceRecordingViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -53,6 +54,15 @@ fun VoiceRecordingScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToHelp) {
+                        Icon(
+                            Icons.Default.Help,
+                            contentDescription = "Help",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             )

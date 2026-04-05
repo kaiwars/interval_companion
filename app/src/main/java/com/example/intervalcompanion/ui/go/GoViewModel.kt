@@ -27,6 +27,10 @@ class GoViewModel(application: Application) : AndroidViewModel(application) {
     private val _state = MutableStateFlow(GoUiState())
     val state: StateFlow<GoUiState> = _state.asStateFlow()
 
+    val hasActiveRounds: StateFlow<Boolean> = repo.settingsFlow
+        .map { it.rounds.any { r -> r.checked && r.hasAnyInterval() } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), true)
+
     private var executionJob: Job? = null
 
     fun play() {

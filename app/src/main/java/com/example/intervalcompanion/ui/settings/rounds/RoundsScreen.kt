@@ -22,6 +22,7 @@ import com.example.intervalcompanion.data.model.Round
 @Composable
 fun RoundsScreen(
     onBack: () -> Unit,
+    onNavigateToHelp: () -> Unit,
     viewModel: RoundsViewModel = viewModel()
 ) {
     val rounds by viewModel.rounds.collectAsState()
@@ -34,6 +35,15 @@ fun RoundsScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToHelp) {
+                        Icon(
+                            Icons.Default.Help,
+                            contentDescription = "Help",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             )
         }
@@ -45,8 +55,9 @@ fun RoundsScreen(
         ) {
             Text(
                 text = "Each round consists of one to three intervals with a duration in seconds. " +
-                        "Zero indicates this interval is omitted. Checked rounds are executed in order, " +
-                        "unchecked rounds are omitted.",
+                        "An empty field indicates this interval is omitted. " +
+                        "Checked rounds are executed in order, repeatedly. " +
+                        "Unchecked rounds are omitted.",
                 modifier = Modifier.padding(16.dp),
                 style = MaterialTheme.typography.bodyMedium
             )
