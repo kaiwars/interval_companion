@@ -1,0 +1,9 @@
+.*/
+__*/
+*.backup
+*.log
+
+app/build/
+
+# Local SDK path — machine-specific, contains your username
+local.properties

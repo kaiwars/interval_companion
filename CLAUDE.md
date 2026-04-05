@@ -1,0 +1,97 @@
+# Interval Companion
+
+Android app that plays recorded voice cues during interval training sessions.
+
+## Tech Stack
+
+- **Language:** Kotlin 2.1.0
+- **UI:** Jetpack Compose + Material3 (BOM 2024.12.01)
+- **Navigation:** Navigation Compose 2.8.4
+- **Persistence:** DataStore Preferences 1.1.2 + Gson 2.11.0 (rounds serialized as JSON)
+- **Audio:** MediaRecorder / MediaPlayer / AudioManager
+- **Min SDK:** 26 · Target SDK: 35 · Java 17
+
+## Project Structure
+
+```
+app/src/main/java/com/example/intervalcompanion/
+├── IntervalCompanionApp.kt       Application class; holds settingsRepository and audioEngine singletons
+├── MainActivity.kt               Single activity; hosts Compose content
+├── audio/
+│   └── AudioEngine.kt            AudioFocus requests, sequential MediaPlayer playback, file paths
+├── data/
+│   ├── SettingsRepository.kt     DataStore access, all suspend mutators, settingsFlow
+│   └── model/
+│       ├── Round.kt              Round data class; activeIntervals() / hasAnyInterval() helpers
+│       └── Settings.kt           AppSettings, AudioPosition enum, AudioFocusStrategy enum
+├── navigation/
+│   └── AppNavigation.kt          NavHost + ModalNavigationDrawer; Screen sealed class
+└── ui/
+    ├── theme/                    Material3 dynamic-color theme
+    ├── go/                       GoScreen + GoViewModel (execution loop, timer)
+    └── settings/
+        ├── SettingsHubScreen.kt  Settings main menu (list of sub-screens)
+        ├── rounds/               Round CRUD
+        ├── intervalnames/        Interval name fields
+        ├── voiceplayback/        Audio position radio groups (before / after / don't play)
+        ├── voicerecording/       Record / playback UI; uses MediaRecorder
+        └── audiofocus/           Duck vs. Pause-and-resume
+```
+
+## Architecture
+
+**MVVM + Repository.** Each screen has a paired ViewModel. ViewModels access singletons via `(application as IntervalCompanionApp).settingsRepository` — no DI framework.
+
+- ViewModels expose `StateFlow<UiState>` collected with `collectAsState()` in screens.
+- All DataStore mutations are `suspend` functions launched from `viewModelScope`.
+- `stateIn(SharingStarted.WhileSubscribed(5000L))` is the standard pattern for derived StateFlows.
+
+## Navigation
+
+```
+Drawer: Go | Settings
+  Go          → GoScreen (start destination)
+  Settings    → SettingsHubScreen
+                  └─ Rounds / Interval Names / Voice Playback / Voice Recording / Audio Focus
+                       └─ back → SettingsHubScreen → back → Go
+```
+
+Routes are `Screen` sealed-class objects in `AppNavigation.kt`.
+
+## Key Data Models
+
+```kotlin
+AppSettings(
+    rounds: List<Round>,
+    intervalName1/2/3: String,          // defaults: "fast", "slow", "chill"
+    intervalNamePosition: AudioPosition, // BEFORE | AFTER | DONT_PLAY
+    roundNumberPosition: AudioPosition,
+    audioFocusStrategy: AudioFocusStrategy, // DUCK | PAUSE_RESUME
+    roundRecordingCount: Int             // how many round-number clips to show
+)
+
+Round(id, checked, interval1/2/3: Int?) // null or 0 = skip that interval slot
+```
+
+## Audio Files
+
+Stored in `context.filesDir/audio/` as M4A:
+- `interval_0.m4a`, `interval_1.m4a`, `interval_2.m4a`
+- `round_0.m4a` … `round_N.m4a`
+
+`AudioEngine.getAudioFile(type, index)` is the single point for resolving paths. `playFiles()` silently skips files that don't exist.
+
+## Execution Loop (GoViewModel)
+
+- `play()` launches `runExecution()` in `viewModelScope`.
+- Iterates active (checked) rounds round-robin until `stop()`.
+- Settings are re-read at the start of each round so live changes take effect.
+- `countdown(seconds)` runs in 100 ms ticks; pauses when `PlayState.PAUSED`, returns `false` when stopped.
+- Audio clips are built by `buildStartClips` / `buildEndClips` and passed to `AudioEngine`. DONT_PLAY falls through (no file added). Non-existent files are filtered by `AudioEngine`.
+
+## Conventions
+
+- Private mutable state: `_foo: MutableStateFlow` exposed as `val foo: StateFlow`.
+- UI state objects are immutable data classes; use `.copy()` for updates.
+- Settings screens save on every `onValueChange` (not on focus-loss) to avoid data loss on back-navigation.
+- `audioposition/` package exists but is unused — superseded by `voiceplayback/`.
