@@ -7,3 +7,7 @@ app/build/
 
 # Local SDK path — machine-specific, contains your username
 local.properties
+
+# Generated at build time from git log
+app/build_number.txt
+app/src/main/assets/release_notes.txt

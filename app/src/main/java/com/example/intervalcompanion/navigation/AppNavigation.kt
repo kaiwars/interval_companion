@@ -16,6 +16,7 @@ import com.example.intervalcompanion.ui.settings.audiofocus.AudioFocusScreen
 import com.example.intervalcompanion.ui.settings.intervalnames.IntervalNamesScreen
 import com.example.intervalcompanion.ui.settings.rounds.RoundsScreen
 import com.example.intervalcompanion.ui.settings.voiceplayback.VoicePlaybackScreen
+import com.example.intervalcompanion.ui.releasenotes.ReleaseNotesScreen
 import com.example.intervalcompanion.ui.settings.voicerecording.VoiceRecordingScreen
 import kotlinx.coroutines.launch
 
@@ -27,6 +28,7 @@ sealed class Screen(val route: String) {
     object VoicePlayback : Screen("settings/voice_playback")
     object VoiceRecording : Screen("settings/voice_recording")
     object AudioFocus : Screen("settings/audio_focus")
+    object ReleaseNotes : Screen("settings/release_notes")
     object Help : Screen("help")
 }
 
@@ -109,7 +111,8 @@ fun AppNavigation() {
                         SettingsItem("Interval Names") { navController.navigate(Screen.IntervalNames.route) },
                         SettingsItem("Voice Playback") { navController.navigate(Screen.VoicePlayback.route) },
                         SettingsItem("Voice Recording") { navController.navigate(Screen.VoiceRecording.route) },
-                        SettingsItem("Audio Focus") { navController.navigate(Screen.AudioFocus.route) }
+                        SettingsItem("Audio Focus") { navController.navigate(Screen.AudioFocus.route) },
+                        SettingsItem("Release Notes") { navController.navigate(Screen.ReleaseNotes.route) }
                     )
                 )
             }
@@ -127,6 +130,9 @@ fun AppNavigation() {
             }
             composable(Screen.AudioFocus.route) {
                 AudioFocusScreen(onBack = backToHub, onNavigateToHelp = navigateToHelp)
+            }
+            composable(Screen.ReleaseNotes.route) {
+                ReleaseNotesScreen(onBack = backToHub)
             }
             composable(Screen.Help.route) {
                 HelpScreen(onBack = { navController.popBackStack() })

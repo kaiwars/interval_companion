@@ -30,6 +30,7 @@ app/src/main/java/com/example/intervalcompanion/
     ├── theme/                    Material3 dynamic-color theme
     ├── go/                       GoScreen + GoViewModel (execution loop, timer)
     ├── help/                     HelpScreen (static; no ViewModel)
+    ├── releasenotes/             ReleaseNotesScreen (static; reads release_notes.txt from assets; no ViewModel)
     └── settings/
         ├── SettingsHubScreen.kt  Settings main menu (list of sub-screens)
         ├── rounds/               Round CRUD
@@ -53,7 +54,7 @@ app/src/main/java/com/example/intervalcompanion/
 Drawer: Go | Settings | Help
   Go          → GoScreen (start destination)
   Settings    → SettingsHubScreen
-                  └─ Rounds / Interval Names / Voice Playback / Voice Recording / Audio Focus
+                  └─ Rounds / Interval Names / Voice Playback / Voice Recording / Audio Focus / Release Notes
                        └─ back → SettingsHubScreen → back → Go
   Help        → HelpScreen (also reachable via "?" button in every screen's TopAppBar)
 ```
@@ -91,6 +92,19 @@ Stored in `context.filesDir/audio/` as M4A:
 - Settings are re-read at the start of each round so live changes take effect.
 - `countdown(seconds)` runs in 100 ms ticks; pauses when `PlayState.PAUSED`, returns `false` when stopped.
 - Audio clips are built by `buildStartClips` / `buildEndClips` and passed to `AudioEngine`. DONT_PLAY falls through (no file added). Non-existent files are filtered by `AudioEngine`.
+
+## Versioning & Build
+
+`app/build.gradle.kts` computes version fields at **configuration time** (top-level, before `android {}`):
+
+- `commitCount` = `git rev-list --count HEAD` → used as `minorRelease`
+- `buildNumber` is read from `app/build_number.txt` (`minorRelease.buildNumber`); resets to 0 on a new commit, increments on each rebuild of the same commit
+- `versionCode` = numeric concatenation of `minorRelease` + `buildNumber` zero-padded to 2 digits (e.g. 3.0 → 300)
+- `versionName` = `majorRelease.minorRelease.buildNumber`
+- `majorRelease` is a top-level `val` in `build.gradle.kts`, updated manually for major releases
+- APK name: `${rootDir.name}_$majorRelease.$minorRelease.$buildNumber.apk`
+
+The `generateReleaseNotes` task (wired to `preBuild`) writes `build_number.txt` and generates `src/main/assets/release_notes.txt` (version header + last 10 git commits).
 
 ## Conventions
 
