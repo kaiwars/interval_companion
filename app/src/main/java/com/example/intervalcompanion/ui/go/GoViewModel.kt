@@ -16,7 +16,9 @@ data class GoUiState(
     val playState: PlayState = PlayState.STOPPED,
     val roundNumber: Int = 1,
     val currentIntervalName: String = "",
-    val elapsedSeconds: Long = 0L
+    val elapsedSeconds: Long = 0L,
+    val roundRemainingSeconds: Long = 0L,
+    val intervalRemainingSeconds: Long = 0L
 )
 
 class GoViewModel(application: Application) : AndroidViewModel(application) {
@@ -72,6 +74,8 @@ class GoViewModel(application: Application) : AndroidViewModel(application) {
 
             val round = activeRounds[roundLoopIndex % activeRounds.size]
             val intervals = round.activeIntervals()
+            val roundTotalSeconds = intervals.sumOf { it.first.toLong() }
+            var roundSecondsConsumed = 0L
 
             _state.update { it.copy(roundNumber = roundNumber) }
 
@@ -81,7 +85,14 @@ class GoViewModel(application: Application) : AndroidViewModel(application) {
                 val isFirst = i == 0
                 val isLast = i == intervals.size - 1
 
-                _state.update { it.copy(currentIntervalName = intervalName) }
+                val roundRemainingAtStart = roundTotalSeconds - roundSecondsConsumed
+                _state.update {
+                    it.copy(
+                        currentIntervalName = intervalName,
+                        intervalRemainingSeconds = duration.toLong(),
+                        roundRemainingSeconds = roundRemainingAtStart
+                    )
+                }
 
                 // Clips to play before interval starts
                 val startClips = buildStartClips(settings, isFirst, roundNumber, intervalIndex)
@@ -89,7 +100,8 @@ class GoViewModel(application: Application) : AndroidViewModel(application) {
                     viewModelScope.launch { audioEngine.playFiles(startClips) }
                 }
 
-                if (!countdown(duration)) return
+                if (!countdown(duration, roundRemainingAtStart)) return
+                roundSecondsConsumed += duration
 
                 // Clips to play after interval ends
                 val endClips = buildEndClips(settings, isLast, roundNumber, intervalIndex)
@@ -136,7 +148,7 @@ class GoViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /** Counts down [seconds] in 100ms ticks, respecting pause/stop. Returns false if stopped. */
-    private suspend fun countdown(seconds: Int): Boolean {
+    private suspend fun countdown(seconds: Int, roundRemainingAtStart: Long): Boolean {
         var ticks = 0
         val totalTicks = seconds * 10
         while (ticks < totalTicks) {
@@ -147,7 +159,14 @@ class GoViewModel(application: Application) : AndroidViewModel(application) {
                     delay(100L)
                     ticks++
                     if (ticks % 10 == 0) {
-                        _state.update { it.copy(elapsedSeconds = it.elapsedSeconds + 1) }
+                        val secondsElapsed = (ticks / 10).toLong()
+                        _state.update {
+                            it.copy(
+                                elapsedSeconds = it.elapsedSeconds + 1,
+                                intervalRemainingSeconds = seconds - secondsElapsed,
+                                roundRemainingSeconds = roundRemainingAtStart - secondsElapsed
+                            )
+                        }
                     }
                 }
             }

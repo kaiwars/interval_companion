@@ -90,7 +90,7 @@ Stored in `context.filesDir/audio/` as M4A:
 - `hasActiveRounds: StateFlow<Boolean>` is derived from `settingsFlow`; GoScreen uses it to show a red warning when no rounds are configured.
 - Iterates active (checked) rounds round-robin until `stop()`.
 - Settings are re-read at the start of each round so live changes take effect.
-- `countdown(seconds)` runs in 100 ms ticks; pauses when `PlayState.PAUSED`, returns `false` when stopped.
+- `countdown(seconds, roundRemainingAtStart)` runs in 100 ms ticks; pauses when `PlayState.PAUSED`, returns `false` when stopped; updates `intervalRemainingSeconds` and `roundRemainingSeconds` each second. `runExecution()` computes `roundTotalSeconds` and tracks `roundSecondsConsumed` per interval to derive `roundRemainingAtStart`, and initialises both remaining fields in state before calling `countdown` so the display is correct from tick 0.
 - Audio clips are built by `buildStartClips` / `buildEndClips` and passed to `AudioEngine`. DONT_PLAY falls through (no file added). Non-existent files are filtered by `AudioEngine`.
 
 ## Versioning & Build

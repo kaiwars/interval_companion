@@ -138,7 +138,38 @@ fun GoScreen(
                 }
             }
 
-            // Elapsed time
+            // Countdown timers: round remaining | interval remaining
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        "Round",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "%02d:%02d".format(state.roundRemainingSeconds / 60, state.roundRemainingSeconds % 60),
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.Light
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        "Interval",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "%02d:%02d".format(state.intervalRemainingSeconds / 60, state.intervalRemainingSeconds % 60),
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.Light
+                    )
+                }
+            }
+
+            // Total elapsed time
             val elapsed = state.elapsedSeconds
             val timeString = if (elapsed >= 3600) {
                 "%02d:%02d:%02d".format(elapsed / 3600, (elapsed % 3600) / 60, elapsed % 60)
@@ -146,12 +177,19 @@ fun GoScreen(
                 "%02d:%02d".format(elapsed / 60, elapsed % 60)
             }
 
-            Text(
-                text = timeString,
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.Light,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    "Total Elapsed Time",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = timeString,
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Light,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
 
             if (!hasActiveRounds) {
                 Spacer(Modifier.weight(1f))

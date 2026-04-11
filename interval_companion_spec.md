@@ -19,7 +19,12 @@ Below that the user sees the current status in two columns with a header on top 
 - "Round" with a large number
 - "Interval" with the name of the interval name that is being executed
 
-below that is a running time in minutes and seconds (MM:SS). If the time exceeds an hour, it is displayed as HH:MM:SS
+
+below that are two counters:
+- to the left is a countdown timer in minutes and seconds (MM:SS), counting down how much time is left in the current round.
+- to the right is a countdown timer in minutes and seconds (MM:SS), counting down how much time is left in the current interval.
+
+below that is the total running time in minutes and seconds (MM:SS). If the time exceeds an hour, it is displayed as HH:MM:SS. this timer is a bit larger than the other two.
 
 When the user taps play, time starts running. The play button turns into a stop button
 
