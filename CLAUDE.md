@@ -8,7 +8,7 @@ Android app that plays recorded voice cues during interval training sessions.
 - **UI:** Jetpack Compose + Material3 (BOM 2024.12.01)
 - **Navigation:** Navigation Compose 2.8.4
 - **Persistence:** DataStore Preferences 1.1.2 + Gson 2.11.0 (rounds serialized as JSON)
-- **Audio:** MediaRecorder / MediaPlayer / AudioManager
+- **Audio:** MediaRecorder / MediaPlayer / AudioManager / LoudnessEnhancer
 - **Min SDK:** 26 · Target SDK: 35 · Java 17
 
 ## Project Structure
@@ -18,7 +18,7 @@ app/src/main/java/com/example/intervalcompanion/
 ├── IntervalCompanionApp.kt       Application class; holds settingsRepository and audioEngine singletons
 ├── MainActivity.kt               Single activity; hosts Compose content
 ├── audio/
-│   └── AudioEngine.kt            AudioFocus requests, sequential MediaPlayer playback, file paths
+│   └── AudioEngine.kt            AudioFocus requests, sequential MediaPlayer playback, LoudnessEnhancer for volume boost, file paths
 ├── data/
 │   ├── SettingsRepository.kt     DataStore access, all suspend mutators, settingsFlow
 │   └── model/
@@ -35,7 +35,7 @@ app/src/main/java/com/example/intervalcompanion/
         ├── SettingsHubScreen.kt  Settings main menu (list of sub-screens)
         ├── rounds/               Round CRUD
         ├── intervalnames/        Interval name fields
-        ├── voiceplayback/        Audio position radio groups (before / after / don't play)
+        ├── voiceplayback/        Audio position radio groups (before / after / don't play) + volume boost (dB)
         ├── voicerecording/       Record / playback UI; uses MediaRecorder
         └── audiofocus/           Duck vs. Pause-and-resume
 ```
@@ -70,7 +70,8 @@ AppSettings(
     intervalNamePosition: AudioPosition, // BEFORE | AFTER | DONT_PLAY
     roundNumberPosition: AudioPosition,
     audioFocusStrategy: AudioFocusStrategy, // DUCK | PAUSE_RESUME
-    roundRecordingCount: Int             // how many round-number clips to show
+    roundRecordingCount: Int,            // how many round-number clips to show
+    volumeBoostDb: Float                 // 0–50 dB; applied via LoudnessEnhancer per MediaPlayer instance
 )
 
 Round(id, checked, interval1/2/3: Int?) // null or 0 = skip that interval slot
@@ -82,7 +83,7 @@ Stored in `context.filesDir/audio/` as M4A:
 - `interval_0.m4a`, `interval_1.m4a`, `interval_2.m4a`
 - `round_0.m4a` … `round_N.m4a`
 
-`AudioEngine.getAudioFile(type, index)` is the single point for resolving paths. `playFiles()` silently skips files that don't exist.
+`AudioEngine.getAudioFile(type, index)` is the single point for resolving paths. `playFiles(files, volumeBoostDb)` silently skips files that don't exist; attaches a `LoudnessEnhancer` to each `MediaPlayer` when `volumeBoostDb > 0`.
 
 ## Execution Loop (GoViewModel)
 

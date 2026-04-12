@@ -26,6 +26,7 @@ class SettingsRepository(private val context: Context) {
         val KEY_AUDIO_FOCUS_STRATEGY = stringPreferencesKey("audio_focus_strategy")
         val KEY_ROUNDS_JSON = stringPreferencesKey("rounds_json")
         val KEY_ROUND_RECORDING_COUNT = intPreferencesKey("round_recording_count")
+        val KEY_VOLUME_BOOST_DB = floatPreferencesKey("volume_boost_db")
     }
 
     val settingsFlow: Flow<AppSettings> = context.dataStore.data.map { prefs ->
@@ -47,7 +48,8 @@ class SettingsRepository(private val context: Context) {
             intervalNamePosition = safeEnum(prefs[KEY_INTERVAL_NAME_POSITION], AudioPosition.BEFORE),
             roundNumberPosition = safeEnum(prefs[KEY_ROUND_NUMBER_POSITION], AudioPosition.BEFORE),
             audioFocusStrategy = safeEnum(prefs[KEY_AUDIO_FOCUS_STRATEGY], AudioFocusStrategy.DUCK),
-            roundRecordingCount = roundCount
+            roundRecordingCount = roundCount,
+            volumeBoostDb = prefs[KEY_VOLUME_BOOST_DB] ?: 0f
         )
     }
 
@@ -77,6 +79,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun updateAudioFocusStrategy(strategy: AudioFocusStrategy) {
         context.dataStore.edit { it[KEY_AUDIO_FOCUS_STRATEGY] = strategy.name }
+    }
+
+    suspend fun updateVolumeBoostDb(value: Float) {
+        context.dataStore.edit { it[KEY_VOLUME_BOOST_DB] = value }
     }
 
     suspend fun incrementRoundRecordingCount() {

@@ -5,6 +5,7 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.media.audiofx.LoudnessEnhancer
 import com.example.intervalcompanion.data.model.AudioFocusStrategy
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
@@ -49,36 +50,48 @@ class AudioEngine(private val context: Context) {
         focusRequest = null
     }
 
-    suspend fun playFiles(files: List<File>) {
+    suspend fun playFiles(files: List<File>, volumeBoostDb: Float = 0f) {
         val existing = files.filter { it.exists() }
         if (existing.isEmpty()) return
         requestFocus()
         try {
             for (file in existing) {
-                playFile(file)
+                playFile(file, volumeBoostDb)
             }
         } finally {
             releaseFocus()
         }
     }
 
-    private suspend fun playFile(file: File) = suspendCancellableCoroutine<Unit> { cont ->
+    private suspend fun playFile(file: File, volumeBoostDb: Float) = suspendCancellableCoroutine<Unit> { cont ->
         val player = MediaPlayer()
+        var enhancer: LoudnessEnhancer? = null
         try {
             player.setDataSource(file.absolutePath)
             player.prepare()
+            if (volumeBoostDb > 0f) {
+                enhancer = LoudnessEnhancer(player.audioSessionId)
+                enhancer.setTargetGain((volumeBoostDb * 100).toInt())
+                enhancer.enabled = true
+            }
             player.setOnCompletionListener {
+                enhancer?.release()
                 it.release()
                 if (cont.isActive) cont.resume(Unit)
             }
             player.setOnErrorListener { mp, _, _ ->
+                enhancer?.release()
                 mp.release()
                 if (cont.isActive) cont.resume(Unit)
                 true
             }
-            cont.invokeOnCancellation { player.release() }
+            cont.invokeOnCancellation {
+                enhancer?.release()
+                player.release()
+            }
             player.start()
         } catch (_: Exception) {
+            enhancer?.release()
             player.release()
             if (cont.isActive) cont.resume(Unit)
         }

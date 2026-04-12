@@ -97,7 +97,7 @@ class GoViewModel(application: Application) : AndroidViewModel(application) {
                 // Clips to play before interval starts
                 val startClips = buildStartClips(settings, isFirst, roundNumber, intervalIndex)
                 if (startClips.isNotEmpty()) {
-                    viewModelScope.launch { audioEngine.playFiles(startClips) }
+                    viewModelScope.launch { audioEngine.playFiles(startClips, settings.volumeBoostDb) }
                 }
 
                 if (!countdown(duration, roundRemainingAtStart)) return
@@ -106,7 +106,7 @@ class GoViewModel(application: Application) : AndroidViewModel(application) {
                 // Clips to play after interval ends
                 val endClips = buildEndClips(settings, isLast, roundNumber, intervalIndex)
                 if (endClips.isNotEmpty()) {
-                    audioEngine.playFiles(endClips)
+                    audioEngine.playFiles(endClips, settings.volumeBoostDb)
                 }
             }
 

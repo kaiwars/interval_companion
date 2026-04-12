@@ -10,7 +10,8 @@ import kotlinx.coroutines.launch
 
 data class VoicePlaybackUiState(
     val intervalNamePosition: AudioPosition = AudioPosition.BEFORE,
-    val roundNumberPosition: AudioPosition = AudioPosition.BEFORE
+    val roundNumberPosition: AudioPosition = AudioPosition.BEFORE,
+    val volumeBoostDb: Float = 0f
 )
 
 class VoicePlaybackViewModel(application: Application) : AndroidViewModel(application) {
@@ -18,7 +19,7 @@ class VoicePlaybackViewModel(application: Application) : AndroidViewModel(applic
     private val repo = (application as IntervalCompanionApp).settingsRepository
 
     val uiState: StateFlow<VoicePlaybackUiState> = repo.settingsFlow.map {
-        VoicePlaybackUiState(it.intervalNamePosition, it.roundNumberPosition)
+        VoicePlaybackUiState(it.intervalNamePosition, it.roundNumberPosition, it.volumeBoostDb)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), VoicePlaybackUiState())
 
     fun setIntervalNamePosition(position: AudioPosition) {
@@ -27,5 +28,9 @@ class VoicePlaybackViewModel(application: Application) : AndroidViewModel(applic
 
     fun setRoundNumberPosition(position: AudioPosition) {
         viewModelScope.launch { repo.updateRoundNumberPosition(position) }
+    }
+
+    fun setVolumeBoostDb(value: Float) {
+        viewModelScope.launch { repo.updateVolumeBoostDb(value.coerceIn(0f, 50f)) }
     }
 }

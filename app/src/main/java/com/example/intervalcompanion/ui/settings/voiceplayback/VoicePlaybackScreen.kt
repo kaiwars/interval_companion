@@ -1,8 +1,11 @@
 package com.example.intervalcompanion.ui.settings.voiceplayback
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Help
@@ -11,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.intervalcompanion.data.model.AudioPosition
@@ -48,15 +52,19 @@ fun VoicePlaybackScreen(
         Column(
             modifier = Modifier
                 .padding(padding)
-                .padding(16.dp)
-                .fillMaxWidth(),
+                .fillMaxSize()
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(
                 "For each interval the interval name is played (if recorded), either at the beginning " +
                 "or the end of the interval. For each round the round number is played (if recorded), " +
                 "either at the beginning of the round (before the first interval name) or at the end " +
-                "of the round, after the last interval name.",
+                "of the round, after the last interval name. " +
+                "Volume boost amplifies how loud name and number clips are played without affecting other apps. " +
+                "0 means exactly as recorded.",
                 style = MaterialTheme.typography.bodyMedium
             )
 
@@ -81,8 +89,33 @@ fun VoicePlaybackScreen(
                 selected = state.roundNumberPosition,
                 onSelect = viewModel::setRoundNumberPosition
             )
+
+            VolumeBoostField(
+                value = state.volumeBoostDb,
+                onValueChange = viewModel::setVolumeBoostDb
+            )
         }
     }
+}
+
+@Composable
+private fun VolumeBoostField(
+    value: Float,
+    onValueChange: (Float) -> Unit
+) {
+    var text by remember(value) { mutableStateOf(if (value == 0f) "0" else value.toBigDecimal().stripTrailingZeros().toPlainString()) }
+
+    OutlinedTextField(
+        value = text,
+        onValueChange = { input ->
+            text = input
+            input.toFloatOrNull()?.let { onValueChange(it) }
+        },
+        label = { Text("Volume boost (dB)") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @Composable

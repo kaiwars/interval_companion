@@ -93,7 +93,8 @@ below that are three text input fields, preceded by the labels:
 
 There is an explanatory text at the top:
 "For each Interval the interval name is played (if recorded), either at the beginning or the end of the interval.
-For each round the round number is played (if recorded), either at the beginning of the round (before the first interval name) or at the end of the round, after the last interval name."
+For each round the round number is played (if recorded), either at the beginning of the round (before the first interval name) or at the end of the round, after the last interval name.
+Volume boost amplifies how loud name and number clips are played without affecting other apps. 0 means exactly as recorded."
 
 There are two groups of radio buttons:
 
@@ -106,6 +107,11 @@ Round number
 - play before (before the first interval name announcement of the round)
 - play after (after the last interval name announcement of the round)
 - don't play
+
+Then there is a number input field with a label "Volume boost (dB)" (float, default 0, range 0–50).
+This boost is applied to all clips (names and numbers) via LoudnessEnhancer and does not affect other apps playing in the background.
+
+
 
 
 ## Voice Recording

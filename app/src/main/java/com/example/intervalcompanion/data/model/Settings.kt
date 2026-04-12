@@ -11,7 +11,8 @@ data class AppSettings(
     val intervalNamePosition: AudioPosition = AudioPosition.BEFORE,
     val roundNumberPosition: AudioPosition = AudioPosition.BEFORE,
     val audioFocusStrategy: AudioFocusStrategy = AudioFocusStrategy.DUCK,
-    val roundRecordingCount: Int = 10
+    val roundRecordingCount: Int = 10,
+    val volumeBoostDb: Float = 0f
 ) {
     fun getIntervalName(index: Int): String = when (index) {
         0 -> intervalName1
