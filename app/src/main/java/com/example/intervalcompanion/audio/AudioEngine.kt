@@ -27,25 +27,28 @@ class AudioEngine(private val context: Context) {
         return File(dir, "${type}_${index}.m4a")
     }
 
+    private val voiceAttributes = AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
+        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+        .build()
+
     private fun requestFocus() {
+        if (strategy == AudioFocusStrategy.NO_CHANGE) return
+
         val gain = if (strategy == AudioFocusStrategy.DUCK)
             AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
         else
             AudioManager.AUDIOFOCUS_GAIN_TRANSIENT
 
         focusRequest = AudioFocusRequest.Builder(gain)
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                    .build()
-            )
+            .setAudioAttributes(voiceAttributes)
             .setOnAudioFocusChangeListener {}
             .build()
         audioManager.requestAudioFocus(focusRequest!!)
     }
 
     private fun releaseFocus() {
+        if (strategy == AudioFocusStrategy.NO_CHANGE) return
         focusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
         focusRequest = null
     }
@@ -67,6 +70,7 @@ class AudioEngine(private val context: Context) {
         val player = MediaPlayer()
         var enhancer: LoudnessEnhancer? = null
         try {
+            player.setAudioAttributes(voiceAttributes)
             player.setDataSource(file.absolutePath)
             player.prepare()
             if (volumeBoostDb > 0f) {

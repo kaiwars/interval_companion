@@ -1,9 +1,12 @@
 package com.example.intervalcompanion.ui.go
 
 import android.app.Application
+import android.content.Intent
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.intervalcompanion.IntervalCompanionApp
+import com.example.intervalcompanion.WorkoutService
 import com.example.intervalcompanion.data.model.AppSettings
 import com.example.intervalcompanion.data.model.AudioPosition
 import java.io.File
@@ -38,6 +41,10 @@ class GoViewModel(application: Application) : AndroidViewModel(application) {
     fun play() {
         if (_state.value.playState != PlayState.STOPPED) return
         _state.value = GoUiState(playState = PlayState.RUNNING)
+        ContextCompat.startForegroundService(
+            getApplication(),
+            Intent(getApplication(), WorkoutService::class.java)
+        )
         executionJob = viewModelScope.launch { runExecution() }
     }
 
@@ -53,6 +60,9 @@ class GoViewModel(application: Application) : AndroidViewModel(application) {
         executionJob?.cancel()
         executionJob = null
         _state.value = GoUiState()
+        getApplication<Application>().stopService(
+            Intent(getApplication(), WorkoutService::class.java)
+        )
     }
 
     private suspend fun runExecution() {

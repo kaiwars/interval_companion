@@ -15,7 +15,8 @@ Android app that plays recorded voice cues during interval training sessions.
 
 ```
 app/src/main/java/com/example/intervalcompanion/
-├── IntervalCompanionApp.kt       Application class; holds settingsRepository and audioEngine singletons
+├── IntervalCompanionApp.kt       Application class; holds settingsRepository and audioEngine singletons; creates notification channel
+├── WorkoutService.kt             Foreground service (mediaPlayback type); started on play(), stopped on stop()
 ├── MainActivity.kt               Single activity; hosts Compose content
 ├── audio/
 │   └── AudioEngine.kt            AudioFocus requests, sequential MediaPlayer playback, LoudnessEnhancer for volume boost, file paths
@@ -37,7 +38,7 @@ app/src/main/java/com/example/intervalcompanion/
         ├── intervalnames/        Interval name fields
         ├── voiceplayback/        Audio position radio groups (before / after / don't play) + volume boost (dB)
         ├── voicerecording/       Record / playback UI; uses MediaRecorder
-        └── audiofocus/           Duck vs. Pause-and-resume
+        └── audiofocus/           Duck / Pause-and-resume / No Change
 ```
 
 ## Architecture
@@ -69,7 +70,7 @@ AppSettings(
     intervalName1/2/3: String,          // defaults: "fast", "slow", "chill"
     intervalNamePosition: AudioPosition, // BEFORE | AFTER | DONT_PLAY
     roundNumberPosition: AudioPosition,
-    audioFocusStrategy: AudioFocusStrategy, // DUCK | PAUSE_RESUME
+    audioFocusStrategy: AudioFocusStrategy, // DUCK | PAUSE_RESUME | NO_CHANGE
     roundRecordingCount: Int,            // how many round-number clips to show
     volumeBoostDb: Float                 // 0–50 dB; applied via LoudnessEnhancer per MediaPlayer instance
 )
@@ -83,11 +84,11 @@ Stored in `context.filesDir/audio/` as M4A:
 - `interval_0.m4a`, `interval_1.m4a`, `interval_2.m4a`
 - `round_0.m4a` … `round_N.m4a`
 
-`AudioEngine.getAudioFile(type, index)` is the single point for resolving paths. `playFiles(files, volumeBoostDb)` silently skips files that don't exist; attaches a `LoudnessEnhancer` to each `MediaPlayer` when `volumeBoostDb > 0`.
+`AudioEngine.getAudioFile(type, index)` is the single point for resolving paths. `playFiles(files, volumeBoostDb)` silently skips files that don't exist; attaches a `LoudnessEnhancer` to each `MediaPlayer` when `volumeBoostDb > 0`. Both the `AudioFocusRequest` and every `MediaPlayer` use `USAGE_ASSISTANCE_NAVIGATION_GUIDANCE` / `CONTENT_TYPE_SPEECH` attributes — this usage type is required for reliable ducking of background music. `NO_CHANGE` strategy skips `requestAudioFocus` / `abandonAudioFocusRequest` entirely.
 
 ## Execution Loop (GoViewModel)
 
-- `play()` launches `runExecution()` in `viewModelScope`.
+- `play()` starts `WorkoutService` (foreground service) then launches `runExecution()` in `viewModelScope`; `stop()` cancels the job and stops the service. The foreground service is required for audio focus (duck/pause) to work when the screen is off — without it Android restricts background audio focus on modern API levels.
 - `hasActiveRounds: StateFlow<Boolean>` is derived from `settingsFlow`; GoScreen uses it to show a red warning when no rounds are configured.
 - Iterates active (checked) rounds round-robin until `stop()`.
 - Settings are re-read at the start of each round so live changes take effect.

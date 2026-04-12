@@ -25,8 +25,9 @@ fun AudioFocusScreen(
     val strategy by viewModel.strategy.collectAsState()
 
     val options = listOf(
-        AudioFocusStrategy.DUCK to "Duck (lower music volume)",
-        AudioFocusStrategy.PAUSE_RESUME to "Pause and resume"
+        AudioFocusStrategy.DUCK to "Duck (lower music volume of background music)",
+        AudioFocusStrategy.PAUSE_RESUME to "Pause and resume background music",
+        AudioFocusStrategy.NO_CHANGE to "No Change (background music continues unchanged)"
     )
 
     Scaffold(

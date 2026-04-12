@@ -1,7 +1,7 @@
 package com.example.intervalcompanion.data.model
 
 enum class AudioPosition { BEFORE, AFTER, DONT_PLAY }
-enum class AudioFocusStrategy { DUCK, PAUSE_RESUME }
+enum class AudioFocusStrategy { DUCK, PAUSE_RESUME, NO_CHANGE }
 
 data class AppSettings(
     val rounds: List<Round> = emptyList(),

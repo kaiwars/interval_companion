@@ -157,8 +157,9 @@ There is an explanatory text at the top:
 "This setting defines how the audio clip is played over the background music when an interval starts or ends."
 
 There are the following, mutually exclusive radio buttons:
-- Duck (lower music volume)
-- Pause and resume
+- Duck (lower music volume of background music)
+- Pause and resume background music
+- No Change (background music continues unchanged)
 
 By default Duck is selected.
 
