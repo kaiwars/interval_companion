@@ -69,7 +69,9 @@ class GoViewModel(application: Application) : AndroidViewModel(application) {
         var settings = repo.getSettings()
         audioEngine.setStrategy(settings.audioFocusStrategy)
 
-        val activeRounds = settings.rounds.filter { it.checked && it.hasAnyInterval() }
+        val activeRounds = settings.rounds
+            .filter { it.checked && it.hasAnyInterval() }
+            .flatMap { r -> List(r.effectiveRepeat()) { r } }
         if (activeRounds.isEmpty()) {
             _state.update { it.copy(playState = PlayState.STOPPED) }
             return
