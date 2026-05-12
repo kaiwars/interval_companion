@@ -40,7 +40,7 @@ class GoViewModel(application: Application) : AndroidViewModel(application) {
 
     fun play() {
         if (_state.value.playState != PlayState.STOPPED) return
-        _state.value = GoUiState(playState = PlayState.RUNNING)
+        _state.value = GoUiState(playState = PlayState.RUNNING) // reset times on (re)start
         ContextCompat.startForegroundService(
             getApplication(),
             Intent(getApplication(), WorkoutService::class.java)
@@ -59,7 +59,7 @@ class GoViewModel(application: Application) : AndroidViewModel(application) {
     fun stop() {
         executionJob?.cancel()
         executionJob = null
-        _state.value = GoUiState()
+        _state.update { it.copy(playState = PlayState.STOPPED) }
         getApplication<Application>().stopService(
             Intent(getApplication(), WorkoutService::class.java)
         )
