@@ -75,7 +75,7 @@ AppSettings(
     volumeBoostDb: Float                 // 0–50 dB; applied via LoudnessEnhancer per MediaPlayer instance
 )
 
-Round(id, checked, interval1/2/3: Int?) // null or 0 = skip that interval slot
+Round(id, checked, interval1/2/3: Int?, repeat: Int = 1) // null or 0 = skip interval; repeat runs the round N times consecutively
 ```
 
 ## Audio Files
@@ -90,8 +90,7 @@ Stored in `context.filesDir/audio/` as M4A:
 
 - `play()` starts `WorkoutService` (foreground service) then launches `runExecution()` in `viewModelScope`; `stop()` cancels the job and stops the service. The foreground service is required for audio focus (duck/pause) to work when the screen is off — without it Android restricts background audio focus on modern API levels.
 - `hasActiveRounds: StateFlow<Boolean>` is derived from `settingsFlow`; GoScreen uses it to show a red warning when no rounds are configured.
-- Iterates active (checked) rounds round-robin until `stop()`.
-- Settings are re-read at the start of each round so live changes take effect.
+- Active (checked) rounds are expanded into a flat list via `effectiveRepeat()` once at workout start — changes to the round list or repeat counts don't take effect until the next play. Audio settings (names, volume, strategy) are still re-read per round.
 - `countdown(seconds, roundRemainingAtStart)` runs in 100 ms ticks; pauses when `PlayState.PAUSED`, returns `false` when stopped; updates `intervalRemainingSeconds` and `roundRemainingSeconds` each second. `runExecution()` computes `roundTotalSeconds` and tracks `roundSecondsConsumed` per interval to derive `roundRemainingAtStart`, and initialises both remaining fields in state before calling `countdown` so the display is correct from tick 0.
 - Audio clips are built by `buildStartClips` / `buildEndClips` and passed to `AudioEngine`. DONT_PLAY falls through (no file added). Non-existent files are filtered by `AudioEngine`.
 
